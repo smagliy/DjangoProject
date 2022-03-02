@@ -1,0 +1,52 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<form id="form-search" action="{% url 'search-city' %}" method="post">
+    {% csrf_token %}
+    <input type="text" id="extra-search-by" name="city" placeholder="City or Country">
+    <div id="task">
+
+    </div>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    let renderTimeout = null;
+    $('#extra-search-by').on("input", function (){
+    if (renderTimeout !== null) {
+        clearTimeout(renderTimeout);
+    }
+    renderTimeout = setTimeout(function () {
+        $.ajax({
+                url:  $('#form-search').attr('action'),
+                data: {'city': $('#extra-search-by').val()},
+                beforeSend: function(xhr, settings){
+                    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+                 },
+                // header: {'X-CSRFToken': '{{ csrf_token }}'},
+                type: 'post',
+                success: function (response) {
+                    console.log(response.city)
+                    if ($('#task p').attr('id') === 'city'){
+                          $('#task p').remove()
+                    }
+                    $('#task').append('<p id="city">'+ response.city.city +' '+ response.city.country +' </p>');
+
+                },
+                error: function () {
+                    console.log('error');
+                }
+        });
+    }, 400);
+});
+</script>
+</body>
+</html>
